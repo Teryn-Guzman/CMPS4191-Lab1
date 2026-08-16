@@ -1,0 +1,69 @@
+
+###############################
+# Gatekeeper CRUD examples
+###############################
+
+# Consumers
+# Create a consumer and store the returned id in $ID
+ID=$(curl -sS -X POST http://localhost:8080/consumers \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Acme Inc","email":"alice@example.com"}' | jq -r '.consumer.id')
+echo "Created consumer ID: $ID"
+
+# List consumers
+curl -sS http://localhost:8080/consumers | jq
+
+# Get a single consumer
+curl -sS http://localhost:8080/consumers/$ID | jq
+
+# Update consumer (patch)
+curl -sS -X PATCH http://localhost:8080/consumers/$ID \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Acme LLC"}' | jq
+
+# Delete consumer
+curl -sS -X DELETE http://localhost:8080/consumers/$ID | jq
+
+
+# API Keys
+# Create an API key (requires an existing consumer id)
+API_KEY_ID=$(curl -sS -X POST http://localhost:8080/api_keys \
+  -H "Content-Type: application/json" \
+  -d '{"consumer_id":"'$ID'","key_prefix":"ak_test"}' | jq -r '.api_key.id')
+echo "Created api_key ID: $API_KEY_ID"
+
+# List api_keys
+curl -sS http://localhost:8080/api_keys | jq
+
+# Get api_key
+curl -sS http://localhost:8080/api_keys/$API_KEY_ID | jq
+
+# Update api_key
+curl -sS -X PATCH http://localhost:8080/api_keys/$API_KEY_ID \
+  -H "Content-Type: application/json" \
+  -d '{"status":"inactive"}' | jq
+
+# Delete api_key
+curl -sS -X DELETE http://localhost:8080/api_keys/$API_KEY_ID | jq
+
+
+# Jobs
+# Create a job (payload is arbitrary JSON)
+JOB_ID=$(curl -sS -X POST http://localhost:8080/jobs \
+  -H "Content-Type: application/json" \
+  -d '{"consumer_id":"'$ID'","job_type":"export","payload":{"foo":"bar"}}' | jq -r '.job.id')
+echo "Created job ID: $JOB_ID"
+
+# List jobs
+curl -sS http://localhost:8080/jobs | jq
+
+# Get job
+curl -sS http://localhost:8080/jobs/$JOB_ID | jq
+
+# Update job (add result or change status)
+curl -sS -X PATCH http://localhost:8080/jobs/$JOB_ID \
+  -H "Content-Type: application/json" \
+  -d '{"status":"completed","result":{"ok":true}}' | jq
+
+# Delete job
+curl -sS -X DELETE http://localhost:8080/jobs/$JOB_ID | jq
