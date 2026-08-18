@@ -38,7 +38,12 @@ func main() {
 
     flag.IntVar(&cfg.port, "port", 8080, "Server port")
     flag.StringVar(&cfg.environment, "env", "development", "Environment (development|staging|production)")
-    flag.StringVar(&cfg.db.dsn, "db-dsn", os.Getenv("DATABASE_URL"), "Postgres DSN")
+    // Prefer explicit GATEKEEPER_DB_DSN, fall back to DATABASE_URL for compatibility
+    defaultDSN := os.Getenv("GATEKEEPER_DB_DSN")
+    if defaultDSN == "" {
+        defaultDSN = os.Getenv("DATABASE_URL")
+    }
+    flag.StringVar(&cfg.db.dsn, "db-dsn", defaultDSN, "Postgres DSN")
     flag.IntVar(&cfg.shutdownTimeout, "shutdown-timeout", 15, "Graceful shutdown timeout in seconds")
     flag.DurationVar(&cfg.reportDelay, "report-delay", 0*time.Second, "Artificial report generation delay (e.g. 3s)")
     flag.Parse()

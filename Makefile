@@ -10,12 +10,12 @@ run/api:
 	@go run ./cmd/api \
 		-port=$(PORT) \
 		-env=$(ENVIRONMENT) \
-		-db-dsn="$(RESTAURANT_DB_DSN)"
+		-db-dsn="$(GATEKEEPER_DB_DSN)"
 
 ## db/psql: connect to the database using psql (terminal)
 .PHONY: db/psql
 db/psql:
-	psql ${RESTAURANT_DB_DSN}
+	psql ${GATEKEEPER_DB_DSN}
 
 ## db/migrations/new name=$1: create a new database migration
 .PHONY: db/migrations/new
@@ -28,4 +28,5 @@ db/migrations/new:
 .PHONY: db/migrations/up
 db/migrations/up:
 	@echo 'Running up migrations...'
-	migrate -path ./migrations -database ${RESTAURANT_DB_DSN} up
+	migrate -path ./migrations -database ${GATEKEEPER_DB_DSN} up
+
