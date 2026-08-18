@@ -32,7 +32,12 @@ func (app *applicationDependencies) createReportHandler(w http.ResponseWriter, r
 		return
 	}
 
-	app.logger.Info("report generation started", "consumer_id", input.ConsumerID)
+	app.logger.Info("report generation started", "consumer_id", input.ConsumerID, "artificial_delay", app.config.reportDelay)
+
+	// Controlled artificial delay to simulate long-running report generation.
+	if app.config.reportDelay > 0 {
+		time.Sleep(app.config.reportDelay)
+	}
 
 	report, err := app.store.GenerateReport(r.Context(), input.ConsumerID, input.From, input.To)
 	if err != nil {

@@ -23,6 +23,7 @@ type serverConfig struct {
         dsn string
     }
     shutdownTimeout int
+    reportDelay     time.Duration
 }
 
 type applicationDependencies struct{
@@ -39,6 +40,7 @@ func main() {
     flag.StringVar(&cfg.environment, "env", "development", "Environment (development|staging|production)")
     flag.StringVar(&cfg.db.dsn, "db-dsn", os.Getenv("DATABASE_URL"), "Postgres DSN")
     flag.IntVar(&cfg.shutdownTimeout, "shutdown-timeout", 15, "Graceful shutdown timeout in seconds")
+    flag.DurationVar(&cfg.reportDelay, "report-delay", 0*time.Second, "Artificial report generation delay (e.g. 3s)")
     flag.Parse()
 
     logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
