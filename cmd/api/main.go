@@ -36,7 +36,7 @@ type applicationDependencies struct{
 func main() {
     var cfg serverConfig
 
-    flag.IntVar(&cfg.port, "port", 8080, "Server port")
+    flag.IntVar(&cfg.port, "port", 4000, "Server port")
     flag.StringVar(&cfg.environment, "env", "development", "Environment (development|staging|production)")
     // Prefer explicit GATEKEEPER_DB_DSN, fall back to DATABASE_URL for compatibility
     defaultDSN := os.Getenv("GATEKEEPER_DB_DSN")
