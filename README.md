@@ -72,14 +72,14 @@ This reads the SQL files under `migrations/` and applies them to the configured 
 make run/api
 ```
 
-The server starts on port `8080` by default.
+The server starts on port `4000` by default.
 
 ## 6) Validate the API is running
 
 Health check:
 
 ```bash
-curl -i http://localhost:8080/healthz
+curl -i http://localhost:4000/healthz
 ```
 
 Expected result: HTTP `200 OK`.
@@ -89,13 +89,13 @@ Expected result: HTTP `200 OK`.
 List consumers:
 
 ```bash
-curl -sS http://localhost:8080/consumers | jq
+curl -sS http://localhost:4000/consumers | jq
 ```
 
 Create a consumer:
 
 ```bash
-curl -sS -X POST http://localhost:8080/consumers \
+curl -sS -X POST http://localhost:4000/consumers \
   -H "Content-Type: application/json" \
   -d '{"name":"Acme Inc","email":"alice@example.com"}' | jq
 ```
@@ -103,7 +103,7 @@ curl -sS -X POST http://localhost:8080/consumers \
 Generate a report:
 
 ```bash
-curl -sS -X POST http://localhost:8080/reports \
+curl -sS -X POST http://localhost:4000/reports \
   -H "Content-Type: application/json" \
   -d '{
     "consumer_id":"0198f000-0000-7000-8000-000000000001",
@@ -115,7 +115,7 @@ curl -sS -X POST http://localhost:8080/reports \
 Debug endpoint:
 
 ```bash
-curl -sS http://localhost:8080/debug | jq
+curl -sS http://localhost:4000/debug | jq
 ```
 
 ## Useful commands
@@ -130,7 +130,7 @@ Run directly without Make:
 
 ```bash
 # prefer using the env var set by .envrc
-go run ./cmd/api -port=8080 -env=development -db-dsn="$GATEKEEPER_DB_DSN"
+go run ./cmd/api -port=4000 -env=development -db-dsn="$GATEKEEPER_DB_DSN"
 ```
 
 Connect to the database:
