@@ -41,7 +41,7 @@ You should now have:
 ```bash
 echo $PORT
 echo $ENVIRONMENT
-echo $RESTAURANT_DB_DSN
+echo $GATEKEEPER_DB_DSN
 ```
 
 ## 3) Make sure PostgreSQL is running
@@ -129,7 +129,8 @@ go mod tidy
 Run directly without Make:
 
 ```bash
-go run ./cmd/api -port=8080 -env=development -db-dsn="postgres://adv_web:password@localhost:5432/adv_web?sslmode=disable"
+# prefer using the env var set by .envrc
+go run ./cmd/api -port=8080 -env=development -db-dsn="$GATEKEEPER_DB_DSN"
 ```
 
 Connect to the database:
