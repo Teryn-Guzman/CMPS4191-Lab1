@@ -124,6 +124,16 @@ func routes(app *applicationDependencies) http.Handler {
     })
 
     mux.HandleFunc("/healthz", healthcheckHandler)
+    
+    mux.HandleFunc("/reports", func(w http.ResponseWriter, r *http.Request) {
+        switch r.Method {
+        case http.MethodPost:
+            app.createReportHandler(w, r)
+        default:
+            http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+        }
+    })
+
 
     return LoggerMiddleware(app.logger)(mux)
 }

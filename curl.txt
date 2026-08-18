@@ -67,3 +67,29 @@ curl -sS -X PATCH http://localhost:8080/jobs/$JOB_ID \
 
 # Delete job
 curl -sS -X DELETE http://localhost:8080/jobs/$JOB_ID | jq
+
+###############################
+# Gatekeeper Reports example
+###############################
+
+# Create a consumer to report on (saves id in $REPORT_CONSUMER_ID)
+REPORT_CONSUMER_ID=$(curl -sS -X POST http://localhost:8080/consumers \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Report User","email":"reporter@example.com"}' | jq -r '.consumer.id')
+echo "Report consumer ID: $REPORT_CONSUMER_ID"
+
+# Optionally create some jobs/api_keys to influence the report counts
+curl -sS -X POST http://localhost:8080/api_keys \
+  -H "Content-Type: application/json" \
+  -d '{"consumer_id":"'$REPORT_CONSUMER_ID'","key_prefix":"rpt"}' | jq
+
+curl -sS -X POST http://localhost:8080/jobs \
+  -H "Content-Type: application/json" \
+  -d '{"consumer_id":"'$REPORT_CONSUMER_ID'","job_type":"import","payload":{"sample":true}}' | jq
+
+# Generate a report (ISO8601 timestamps)
+curl -sS -X POST http://localhost:8080/reports \
+  -H "Content-Type: application/json" \
+  -d '{"consumer_id":"'$REPORT_CONSUMER_ID'","from":"2026-01-01T00:00:00Z","to":"2026-12-31T23:59:59Z"}' | jq
+
+

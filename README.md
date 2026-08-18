@@ -1,18 +1,139 @@
-# Gatekeeper - Minimal API for testing migrations
+# CMPS4191 • LABORATORY 1
 
-This small server exposes a `/debug` endpoint that returns JSON for `consumers`, `api_keys`, and `jobs` tables.
+## What is included
 
-Prerequisites:
-- A Postgres instance with the migrations applied (see `migrations/`)
-- `DATABASE_URL` environment variable set (e.g. `postgres://user:pass@localhost:5432/dbname`)
+- CRUD endpoints for consumers
+- CRUD endpoints for API keys
+- CRUD endpoints for jobs
+- `/healthz` health check
+- `/debug` endpoint that returns the current data in JSON
+- `/reports` endpoint to generate a consumer activity summary
 
-Run locally:
+## Prerequisites
+
+- Go 1.22+
+- PostgreSQL running locally
+- `psql` and `migrate` available in your shell
+- A database named `adv_web` with the credentials in `.envrc`
+
+The project expects this DSN by default:
 
 ```bash
-export DATABASE_URL='postgres://user:pass@localhost:5432/dbname'
-cd Gatekeeper
-go mod tidy
-go run ./cmd/api
+postgres://adv_web:password@localhost:5432/adv_web?sslmode=disable
 ```
 
-Then open http://localhost:8080/debug to see JSON output.
+## 1) Clone and enter the project
+
+```bash
+cd /path/to/Gatekeeper
+```
+
+## 2) Load environment variables
+
+The repository includes a `.envrc` file that sets the app port and database DSN.
+
+```bash
+source .envrc
+```
+
+You should now have:
+
+```bash
+echo $PORT
+echo $ENVIRONMENT
+echo $RESTAURANT_DB_DSN
+```
+
+## 3) Make sure PostgreSQL is running
+
+If your local Postgres server is not up, start it first. Then confirm the database exists.
+
+```bash
+psql "postgres://adv_web:password@localhost:5432/postgres" -c "SELECT 1;"
+```
+
+If needed, create the database:
+
+```bash
+createdb -h localhost -U postgres adv_web
+```
+
+## 4) Apply the database migrations
+
+```bash
+make db/migrations/up
+```
+
+This reads the SQL files under `migrations/` and applies them to the configured DSN.
+
+## 5) Run the API
+
+```bash
+make run/api
+```
+
+The server starts on port `8080` by default.
+
+## 6) Validate the API is running
+
+Health check:
+
+```bash
+curl -i http://localhost:8080/healthz
+```
+
+Expected result: HTTP `200 OK`.
+
+## Example endpoints
+
+List consumers:
+
+```bash
+curl -sS http://localhost:8080/consumers | jq
+```
+
+Create a consumer:
+
+```bash
+curl -sS -X POST http://localhost:8080/consumers \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Acme Inc","email":"alice@example.com"}' | jq
+```
+
+Generate a report:
+
+```bash
+curl -sS -X POST http://localhost:8080/reports \
+  -H "Content-Type: application/json" \
+  -d '{
+    "consumer_id":"0198f000-0000-7000-8000-000000000001",
+    "from":"2025-01-01T00:00:00Z",
+    "to":"2026-12-31T23:59:59Z"
+  }' | jq
+```
+
+Debug endpoint:
+
+```bash
+curl -sS http://localhost:8080/debug | jq
+```
+
+## Useful commands
+
+Install Go dependencies:
+
+```bash
+go mod tidy
+```
+
+Run directly without Make:
+
+```bash
+go run ./cmd/api -port=8080 -env=development -db-dsn="postgres://adv_web:password@localhost:5432/adv_web?sslmode=disable"
+```
+
+Connect to the database:
+
+```bash
+make db/psql
+```

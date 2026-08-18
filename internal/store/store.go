@@ -2,9 +2,13 @@ package store
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
+	"time"
 
 	"github.com/Teryn-Guzman/Gatekeeper/internal/data"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -150,4 +154,51 @@ func (s *Store) UpdateJob(ctx context.Context, j *data.Job) error {
 func (s *Store) DeleteJob(ctx context.Context, id string) error {
     _, err := s.db.Exec(ctx, `DELETE FROM jobs WHERE id=$1`, id)
     return err
+}
+
+// Generate a consumer activity report for the given time range.
+func (s *Store) GenerateReport(ctx context.Context, consumerID string, from, to time.Time) (*data.ConsumerActivityReport, error) {
+    query := `
+        SELECT
+            c.id,
+            c.name,
+            COUNT(DISTINCT k.id) FILTER (WHERE k.status = 'active'),
+            COUNT(DISTINCT k.id) FILTER (WHERE k.status = 'revoked'),
+            COUNT(DISTINCT j.id) FILTER (WHERE j.status = 'queued'),
+            COUNT(DISTINCT j.id) FILTER (WHERE j.status = 'processing'),
+            COUNT(DISTINCT j.id) FILTER (WHERE j.status = 'completed'),
+            COUNT(DISTINCT j.id) FILTER (WHERE j.status = 'failed')
+        FROM consumers c
+        LEFT JOIN api_keys k ON k.consumer_id = c.id
+        LEFT JOIN jobs j ON j.consumer_id = c.id
+            AND j.created_at >= $2
+            AND j.created_at < $3
+        WHERE c.id = $1
+        GROUP BY c.id, c.name`
+
+    report := &data.ConsumerActivityReport{
+        From:        from,
+        To:          to,
+        GeneratedAt: time.Now(),
+    }
+
+    row := s.db.QueryRow(ctx, query, consumerID, from, to)
+    err := row.Scan(
+        &report.ConsumerID,
+        &report.ConsumerName,
+        &report.ActiveKeys,
+        &report.RevokedKeys,
+        &report.QueuedJobs,
+        &report.ProcessingJobs,
+        &report.CompletedJobs,
+        &report.FailedJobs,
+    )
+    if err != nil {
+        if errors.Is(err, pgx.ErrNoRows) {
+            return nil, sql.ErrNoRows
+        }
+        return nil, err
+    }
+
+    return report, nil
 }
