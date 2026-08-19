@@ -1,5 +1,5 @@
 # CMPS4191 • LABORATORY 1
-
+## Teryn Guzman & Kelvin Gordon
 ## What is included
 
 - CRUD endpoints for consumers
