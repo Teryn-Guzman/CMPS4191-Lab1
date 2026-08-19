@@ -6,16 +6,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Teryn-Guzman/Gatekeeper/internal/data"
 	"github.com/Teryn-Guzman/Gatekeeper/internal/validator"
 )
 
 // createReportHandler generates a consumer activity report for a given time range.
 func (app *applicationDependencies) createReportHandler(w http.ResponseWriter, r *http.Request) {
-	var input struct {
-		ConsumerID string    `json:"consumer_id"`
-		From       time.Time `json:"from"`
-		To         time.Time `json:"to"`
-	}
+	var input data.ReportRequest
 
 	if err := readJSON(w, r, &input); err != nil {
 		badRequestResponse(w, r, err)
