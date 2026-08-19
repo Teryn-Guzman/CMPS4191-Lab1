@@ -78,8 +78,3 @@ func main() {
 		os.Exit(1)
 	}
 }
-
-func (app *applicationDependencies) serve() error {
-	handler := routes(app)
-	return startServer(app, handler)
-}
